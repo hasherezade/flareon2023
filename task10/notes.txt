@@ -1,0 +1,11 @@
+## commands executed:
+
+sim> boot rq0
+
+mt rewind
+dd if=/dev/rmt12 of=file1.txt
+dd if=/dev/rmt12 of=file2.bin
+cp file2.bin file2.Z
+uncompress -f file2
+mt rewind
+dd if=file2 of=/dev/rmt12
