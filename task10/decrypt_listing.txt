@@ -1,0 +1,197 @@
+decrypt:        mov     r2,-(sp)
+decrypt+04:     mov     r4,-(sp)
+decrypt+06:     mov     r5,-(sp)
+decrypt+010:    jsr     r4,bl
+
+bl:             jsr     pc,_const
+_const:         mov     *(sp)+,-(r5)  
+
+decrypt+016:    mov     (sp)+,r4
+decrypt+020:    jsr     r4,parse
+
+	parse:          jsr     r4,_docol
+
+		preparse:       jsr     r4,_docol
+
+			source:         jsr     r4,_docol
+
+			tib:            jsr     pc,_const
+			_const:         mov     *(sp)+,-(r5)
+
+			ntib:           jsr     pc,_const
+			_const:         mov     *(sp)+,-(r5)  
+
+			at:             mov     *0(r5),(r5)
+
+			exit:           mov     (sp)+,r4
+
+		toin:           jsr     pc,_const
+		_const:         mov     *(sp)+,-(r5) 
+
+		at:             mov     *0(r5),(r5)
+
+			sstring:        jsr     r4,_docol 
+
+			twodup:         mov     02(r5),-(r5)
+			twodup+04:      mov     02(r5),-(r5)
+
+			minus:          sub     (r5)+,(r5)
+
+			zerolt:         clr     -(r5)
+			zerolt+02:      br      lt
+
+			lt:             sub     (r5)+,(r5)
+			lt+02:          br      _set_cond
+
+			_set_cond:      xor     r0,r0
+			_set_cond+02:   sbc     r0
+			_set_cond+04:   mov     r0,(r5)
+
+
+			if:             mov     (r4)+,r0
+			if+02:          tst     (r5)+
+			if+04:          bne     if+010
+			if+06:          mov     r0,r4 
+
+				tuck:           jsr     r4,_docol
+
+				swap:           mov     (r5)+,r0
+				swap+02:        mov     (r5),-(r5)
+				swap+04:        mov     r0,02(r5)
+
+				over:           mov     02(r5),-(r5)
+
+				exit:           mov     (sp)+,r4 
+
+				minus:          sub     (r5)+,(r5) 
+
+				tor:            mov     (r5)+,-(sp)  
+
+				plus:           add     (r5)+,(r5) 
+
+				rto:            mov     (sp)+,-(r5)   
+
+				exit:           mov     (sp)+,r4 
+
+			rot:            mov     (r5)+,r0
+			rot+02:         mov     02(r5),r1
+			rot+06:         mov     (r5)+,(r5)
+			rot+010:        mov     r0,-(r5)
+			rot+012:        mov     r1,-(r5)   
+
+			exit:           mov     (sp)+,r4  
+
+		###    
+
+			pparsep:        jsr     r4,_docol    
+
+			tor:            mov     (r5)+,-(sp)     
+
+			twodup:         mov     02(r5),-(r5)
+			twodup+04:      mov     02(r5),-(r5) 
+
+			rto:            mov     (sp)+,-(r5)
+
+				scan:           jsr     r4,_docol   
+
+				tor:            mov     (r5)+,-(sp)  
+
+				dup:            mov     (r5),-(r5)
+
+				zerogt:         clr     -(r5)
+				zerogt+02:      br      gt
+
+				gt:             cmp     (r5)+,(r5)
+				gt+02:          br      _set_cond
+				_set_cond:      xor     r0,r0
+				_set_cond+02:   sbc     r0
+				_set_cond+04:   mov     r0,(r5)
+
+				if:             mov     (r4)+,r0
+				if+02:          tst     (r5)+
+				if+04:          bne     if+010
+				if+06:          mov     r0,r4
+
+				rdrop:          tst     (sp)+
+
+				exit:           mov     (sp)+,r4 
+
+			nip:            mov     (r5)+,(r5)
+
+			minus:          sub     (r5)+,(r5)
+
+			exit:           mov     (sp)+,r4
+			
+			##
+			 
+			postparse:      jsr     r4,_docol
+			 
+			twodup:         mov     02(r5),-(r5)
+			twodup+04:      mov     02(r5),-(r5)  
+
+			plus:           add     (r5)+,(r5)   
+
+			source:         jsr     r4,_docol   
+
+			tib:            jsr     pc,_const
+			_const:         mov     *(sp)+,-(r5)
+
+			ntib:           jsr     pc,_const
+			_const:         mov     *(sp)+,-(r5)
+
+			at:             mov     *0(r5),(r5) 
+
+			exit:           mov     (sp)+,r4   
+
+		drop:           clr     (r5)+
+
+		minus:          sub     (r5)+,(r5)   
+
+		oneplus:        inc     (r5)
+
+		toin:           jsr     pc,_const
+		_const:         mov     *(sp)+,-(r5)
+
+		bang:           mov     (r5)+,r0
+		bang+02:        mov     (r5)+,(r0)
+
+		exit:           mov     (sp)+,r4    
+		
+		###
+
+	exit:           mov     (sp)+,r4
+
+decrypt+026:    mov     (sp)+,r4
+                mov     (r5)+,r3
+                mov     (r5)+,r1
+                mov     (r5),r2
+                mov     02(r5),r0
+                mov     r3,-(sp)
+decrypt+044:
+                cmp     r2,r3
+                bgt     decrypt+054
+				
+                mov     r2,r3
+                beq     decrypt+076
+				
+decrypt+054: 
+                sub     r3,r2
+decrypt+056:
+                movb    (r0),r4
+                movb    (r1)+,r5
+                xor     r4,r5
+                movb    r5,(r0)+
+				
+                sob     r3,decrypt+056
+                mov     (sp),r3
+                sub     r3,r1
+                br      decrypt+044
+decrypt+076:
+                tst     (sp)+
+                mov     (sp)+,r5
+                mov     (sp)+,r4
+                mov     (sp)+,r3
+                mov     (sp)+,r2
+                
+                swab    sp
+                halt

@@ -1,0 +1,52 @@
+decode:
+decode:         jsr     r4,_docol
+zero:           jsr     pc,_const
+
+_const:         mov     *(sp)+,-(r5)
+_const+02:      
+
+tor:            mov     (r5)+,-(sp) ; r5      07332   _data_s0
+
+label_1:
+	dup:            mov     (r5),-(r5)
+
+	if:             mov     (r4)+,r0
+	if+02:          tst     (r5)+
+	if+04:          bne     if_010
+	if+06:          mov     r0,r4 ; finish
+if_10:
+
+	swap:           mov     (r5)+,r0
+	swap+02:        mov     (r5),-(r5)
+	swap+04:        mov     r0,02(r5)
+
+	dup:            mov     (r5),-(r5)
+
+	cat:            movb    *0(r5),(r5)
+	cat+04:         clrb    01(r5)
+
+	rto:            mov     (sp)+,-(r5)
+
+	plus:           add     (r5)+,(r5)
+
+	twodup:         mov     02(r5),-(r5)
+	twodup+04:      mov     02(r5),-(r5)
+	swap:           mov     (r5)+,r0
+	swap+02:        mov     (r5),-(r5)
+	swap+04:        mov     r0,02(r5)
+
+	cbang:          movb    02(r5),*0(r5)
+	cbang+06:       add     $04,r5
+
+	tor:            mov     (r5)+,-(sp)
+
+	oneplus:        inc     (r5) ;r5++
+
+	swap:           mov     (r5)+,r0
+	swap+02:        mov     (r5),-(r5)
+	swap+04:        mov     r0,02(r5)
+
+	oneminus:       dec     (r5)
+
+goto:           mov     (r4),r4  
+goto label_1
