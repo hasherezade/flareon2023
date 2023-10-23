@@ -1,0 +1,47 @@
+After applying the addresses, patch the thread starting points.
+Original:
+
+```
+5778d;kernel32.CreateThread
+CreateThread:
+	Arg[0] = 0
+	Arg[1] = 0
+	Arg[2] = ptr 0x000000018004928c -> {H\x89L$\x08\xe9Tu}
+
+62fd5;kernel32.CreateThread
+CreateThread:
+	Arg[0] = 0
+	Arg[1] = 0
+	Arg[2] = ptr 0x000000018004e0e7 -> {H\x89L$\x08\xe9\xd9'}
+``
+
+From listing:
+
+```
+0x18004928c -> 0xcb1e 48894c2408
+
+0x18004e0e7 -> 0xfaa4 48894c2408
+```
+
+In deobfuscated binary:
+
+```
+55fc;kernel32.CreateThread
+CreateThread:
+	Arg[0] = 0
+	Arg[1] = 0
+	Arg[2] = ptr 0x00000001800394d3 -> {\x00\x00\x00\x00\x00\x00\x00\x00} -> redirect to 0xcb1e 
+
+562c;kernel32.CreateThread
+CreateThread:
+	Arg[0] = 0
+	Arg[1] = 0
+	Arg[2] = ptr 0x0000000180027dea -> {\x00\x00\x00\x00\x00\x00\x00\x00} -> redirect to 0xfaa4 
+
+```
+
+Execute:
+
+nc localhost 1337
+gimmie_s3cr3t
+patience_y0u_must_h4v3

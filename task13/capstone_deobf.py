@@ -5,6 +5,7 @@ import pefile
 import binascii
 
 g_offset_to_line = {}
+g_jump_lookup = {}
 g_curr_line = 0x1000
 g_translate = False
 g_out_file = None
@@ -14,23 +15,29 @@ def disasm_till_jump(md, binary_code, RVA, called_functions, targets, local_offs
     global g_offset_to_line
     global g_translate
     global g_out_file
+    global g_jump_lookup
     target = 0
     take_branch = False
     for insn in md.disasm(binary_code, RVA):
 
         is_branch = False
         is_uncond = False
-        is_reg = False
+        not_imm = False
         if capstone.x86.X86_GRP_JUMP in insn.groups:
             is_branch = True
-            if (insn.operands[0].type == capstone.x86.X86_OP_REG):
-                is_reg = True
-            target = insn.operands[0].value.imm# - code_section.VirtualAddress
+            target = 0
+            if (insn.operands[0].type != capstone.x86.X86_OP_IMM):
+                not_imm = True
+            else:
+                target = insn.operands[0].value.imm # - code_section.VirtualAddress
+                targets.add(target)
+
             if insn.mnemonic in [ "jmp" ]:
                 is_uncond = True
-            elif target != 0:
-                targets.add(target)
-        if not is_uncond or (is_uncond and target in local_offsets) or is_reg:
+
+        if is_uncond and target != 0 and not g_translate:
+            g_jump_lookup[insn.address] = target
+        if not is_uncond or (is_uncond and target in local_offsets) or not_imm:
             if not g_translate:
                 curr_offset = g_curr_line
                 g_offset_to_line[insn.address] = curr_offset
@@ -38,16 +45,22 @@ def disasm_till_jump(md, binary_code, RVA, called_functions, targets, local_offs
                 hex_string = binascii.hexlify(insn.bytes).decode('utf-8')
                 print("0x%x -> 0x%x %s" % (insn.address, curr_offset, hex_string) )
             if g_translate:
-                line = ""
+                line = None
                 mapped_offset = g_offset_to_line[insn.address]
                 if (is_branch or insn.mnemonic == 'call') and (insn.operands[0].type == capstone.x86.X86_OP_IMM):
                     target_val = 0
                     try:
                         target_val = g_offset_to_line[insn.operands[0].value.imm]
+                        line = ("%s\t0x%x" % (insn.mnemonic, target_val))
                     except KeyError:
-                        print("WARNING: key not found for the target!")
-                    line = ("%s\t0x%x" % (insn.mnemonic, target_val))
-                else:
+                        #print("WARNING: key not found for the target")
+                        try:
+                            next_hop = g_jump_lookup[insn.operands[0].value.imm]
+                            target_val = g_offset_to_line[next_hop]
+                            line = ("%s\t0x%x" % (insn.mnemonic, target_val))
+                        except KeyError:
+                            print("WARNING: key not found for the target")
+                if line is None:
                     line = ("%s\t%s" % (insn.mnemonic, insn.op_str))
                 g_out_file.write("%d;%s" % (insn.size, line))
                 g_out_file.write('\n')
@@ -57,7 +70,7 @@ def disasm_till_jump(md, binary_code, RVA, called_functions, targets, local_offs
             if (target in local_offsets):
                 take_branch = False
         if is_branch and (take_branch or is_uncond):
-            if is_reg:
+            if not_imm:
                 print(";Reg_call!")
                 return (0, False)
             return (target, False)
@@ -77,7 +90,7 @@ def print_flow(md, code_section, target, img_base, called_functions, targets, lo
 
     is_ret = False
     while (not is_ret):
-        #print ("Target: %x " % target)
+        #print ("Following target: %x " % target)
         if target in local_offsets:
             break
         if target == 0:
