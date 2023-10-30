@@ -47,16 +47,7 @@ def emulate_func(keyc, code):
 	    #keyraw = bytes.fromhex("06010d020e060e01040a070501020304")
 	    mu.mem_write(0x2a4c, keyraw)
 	    mu.mem_write(DATA_ADDR, key+key)
-
 	    mu.reg_write(UC_X86_REG_EDI, DATA_ADDR)
-	    
-	    mu.reg_write(UC_X86_REG_EAX, 0x1c0d)
-	    mu.reg_write(UC_X86_REG_EBX, 0x0)
-	    mu.reg_write(UC_X86_REG_ECX, 0x1)
-	    mu.reg_write(UC_X86_REG_EDX, 0x1224)
-	    mu.reg_write(UC_X86_REG_ESI, 0x0)
-	    mu.reg_write(UC_X86_REG_EBP, 0x1)
-	    mu.reg_write(UC_X86_REG_ESP, 0xfff6)
 
 	    mu.emu_start(0x1296, 0x130B)
 
