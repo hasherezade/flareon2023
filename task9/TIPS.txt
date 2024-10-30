@@ -1,0 +1,20 @@
+
+qemu
+====
+
+qemu-system-i386 -soundhw pcspk -drive file=hda.img,format=raw
+
+bochs
+=====
+
+bochs -n "ata0-master: type=disk, path=hda.img" "boot: disk"
+
+vmware
+======
+
+import vmware/mbransom.vmx into VMware
+
+other
+=====
+
+hda.img is a raw disk image. make sure the VM guest uses BIOS (not UEFI) boot
